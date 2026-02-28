@@ -12,7 +12,7 @@ DB_NAME = os.getenv("DB_NAME")
 DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
-# Destinos de saida para os artefatos finais de dados.
+# Destinos de saida para os dados.
 OUTPUT_PATH = os.getenv(
     "OUTPUT_PATH", r"C:\Users\User\OneDrive\Documentos\sicooperative-etl\base_final"
 )
@@ -24,7 +24,7 @@ SPARK_MASTER = os.getenv("SPARK_MASTER", "local[*]")
 SPARK_JARS = os.getenv("SPARK_JARS", r"C:\spark\jars\postgresql-42.7.2.jar")
 SPARK_LOG_LEVEL = os.getenv("SPARK_LOG_LEVEL", "ERROR")
 
-# URI absoluta para o arquivo local de configuracao do Log4j2.
+# Para o arquivo local de configuracao do Log4j2.
 LOG4J2_FILE = (Path(__file__).resolve().parent / "log4j2.properties").as_uri()
 
 # Configuracoes extras do Spark aplicadas no builder da SparkSession.

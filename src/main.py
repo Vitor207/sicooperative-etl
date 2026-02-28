@@ -146,21 +146,23 @@ movimento_flat = (
     .join(df_conta.alias("co"), F.col("c.id_conta") == F.col("co.id"), "inner")
     .join(df_associado.alias("a"), F.col("co.id_associado") == F.col("a.id"), "inner")
     .select(
-        F.col("a.nome").alias("Nome_associado"),
-        F.col("a.sobrenome").alias("Sobrenome_associado"),
-        F.col("a.idade").alias("idade_associado"),
-        F.col("m.vlr_transacao").alias("Vlr_transacao_movimento"),
-        F.col("m.des_transacao").alias("Des_transacao_movimento"),
-        F.col("m.data_movimento").alias("Data_movimento"),
-        F.col("c.num_cartao").alias("Numero_cartao"),
-        F.col("c.nom_impresso").alias("Nome_impresso_cartao"),
-        F.col("c.data_criacao_cartao").alias("Data_criacao_cartao"),
-        F.col("co.tipo").alias("Tipo_conta"),
-        F.col("co.data_criacao_conta").alias("Data_criacao_conta"),
+        F.initcap(F.trim(F.col("a.nome"))).cast("string").alias("Nome_associado"),
+        F.initcap(F.trim(F.col("a.sobrenome"))).cast("string").alias("Sobrenome_associado"),
+        F.col("a.idade").cast("int").alias("Idade_associado"),
+        F.col("m.vlr_transacao").cast("decimal(18,2)").alias("Vlr_transacao_movimento"),
+        F.initcap(F.trim(F.col("m.des_transacao"))).cast("string").alias("Des_transacao_movimento"),
+        F.date_format(F.col("m.data_movimento"), "dd/MM/yyyy").alias("Data_movimento"),
+        F.concat(
+            F.substring(F.col("c.num_cartao").cast("string"), 1, 4),
+            F.lit("********"),
+            F.expr("right(cast(c.num_cartao as string), 4)"),
+        ).cast("string").alias("Numero_cartao"),
+        F.initcap(F.trim(F.col("c.nom_impresso"))).cast("string").alias("Nome_impresso_cartao"),
+        F.date_format(F.col("c.data_criacao_cartao"), "dd/MM/yyyy").alias("Data_criacao_cartao"),
+        F.initcap(F.trim(F.col("co.tipo"))).cast("string").alias("Tipo_conta"),
+        F.date_format(F.col("co.data_criacao_conta"), "dd/MM/yyyy").alias("Data_criacao_conta"),
     )
 )
-
-
 
 # Carrega no PostgreSQL na tabela final.
 movimento_flat.write.jdbc(
