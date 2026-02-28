@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 from pathlib import Path
 
 # Sessao Spark e funcoes SQL auxiliares.
@@ -39,6 +40,8 @@ def validar_qualidade_df(
     df,
     nome_tabela,
     pk_col,
+    colunas_obrigatorias=None,
+    colunas_numericas_obrigatorias=None,
     colunas_valor=None,
     coluna_idade=None,
     coluna_email=None,
@@ -58,14 +61,29 @@ def validar_qualidade_df(
     if qtd_pk_duplicada > 0:
         erros.append(f"PK duplicada: {qtd_pk_duplicada} chave(s)")
 
-    # Valida nulos por coluna.
-    agregacoes_nulos = [
-        F.sum(F.when(F.col(c).isNull(), 1).otherwise(0)).alias(c) for c in df.columns
-    ]
-    nulos = df.agg(*agregacoes_nulos).collect()[0].asDict()
-    nulos_detectados = {col: qtd for col, qtd in nulos.items() if qtd > 0}
-    if nulos_detectados:
-        erros.append(f"Nulos por coluna: {nulos_detectados}")
+    # Valida nulos somente nas colunas obrigatorias.
+    colunas_obrigatorias = colunas_obrigatorias or []
+    if colunas_obrigatorias:
+        agregacoes_nulos = [
+            F.sum(F.when(F.col(c).isNull(), 1).otherwise(0)).alias(c)
+            for c in colunas_obrigatorias
+        ]
+        nulos = df.agg(*agregacoes_nulos).collect()[0].asDict()
+        nulos_detectados = {col: qtd for col, qtd in nulos.items() if qtd > 0}
+        if nulos_detectados:
+            erros.append(f"Nulos em colunas obrigatorias: {nulos_detectados}")
+
+    # Valida colunas numericas obrigatorias (ex.: IDs) como inteiros positivos.
+    colunas_numericas_obrigatorias = colunas_numericas_obrigatorias or []
+    numeros_invalidos = {}
+    for col in colunas_numericas_obrigatorias:
+        qtd_invalido = df.filter(
+            F.col(col).isNull() | (F.col(col).cast("long").isNull()) | (F.col(col).cast("long") <= 0)
+        ).count()
+        if qtd_invalido > 0:
+            numeros_invalidos[col] = qtd_invalido
+    if numeros_invalidos:
+        erros.append(f"Numeros invalidos em colunas obrigatorias: {numeros_invalidos}")
 
     # Valida valores zerados para colunas de valor.
     colunas_valor = colunas_valor or []
@@ -126,18 +144,35 @@ validar_qualidade_df(
     df_associado,
     "associado",
     pk_col="id",
+    colunas_obrigatorias=["id", "nome", "sobrenome", "idade", "email"],
+    colunas_numericas_obrigatorias=["id"],
     coluna_idade="idade",
     coluna_email="email",
     emails_bloqueados=["sememail@email.com"],
 )
-validar_qualidade_df(df_conta, "conta", pk_col="id")
+validar_qualidade_df(
+    df_conta,
+    "conta",
+    pk_col="id",
+    colunas_obrigatorias=["id", "tipo", "id_associado"],
+    colunas_numericas_obrigatorias=["id", "id_associado"],
+)
 validar_qualidade_df(
     df_cartao,
     "cartao",
     pk_col="id",
+    colunas_obrigatorias=["id", "num_cartao", "id_conta"],
+    colunas_numericas_obrigatorias=["id", "id_conta"],
     colunas_tamanho_minimo={"num_cartao": 16},
 )
-validar_qualidade_df(df_movimento, "movimento", pk_col="id", colunas_valor=["vlr_transacao"])
+validar_qualidade_df(
+    df_movimento,
+    "movimento",
+    pk_col="id",
+    colunas_obrigatorias=["id", "vlr_transacao", "id_cartao"],
+    colunas_numericas_obrigatorias=["id", "id_cartao"],
+    colunas_valor=["vlr_transacao"],
+)
 
 # Transforma para o modelo flat a tabela final.
 movimento_flat = (
@@ -192,9 +227,21 @@ if not part_files:
     raise FileNotFoundError("Arquivo CSV gerado pelo Spark nao foi encontrado.")
 
 final_csv = output_dir / "movimento_flat.csv"
+destino_csv = final_csv
 if final_csv.exists():
-    final_csv.unlink()
-shutil.move(str(part_files[0]), str(final_csv))
+    for tentativa in range(5):
+        try:
+            final_csv.unlink()
+            break
+        except PermissionError:
+            if tentativa == 4:
+                destino_csv = output_dir / f"movimento_flat_{int(time.time())}.csv"
+                print(
+                    f"Arquivo bloqueado. Salvando com nome alternativo: {destino_csv.name}"
+                )
+                break
+            time.sleep(1)
+shutil.move(str(part_files[0]), str(destino_csv))
 shutil.rmtree(spark_output_dir, ignore_errors=True)
 
 # Exibe uma amostra para validacao rapida.
