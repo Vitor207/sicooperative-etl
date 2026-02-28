@@ -236,12 +236,12 @@ movimento_flat = (
 )
 
 # Carrega no PostgreSQL na tabela final.
-movimento_flat.write.jdbc(
-    url=JDBC_URL,
-    table=MOVIMENTO_FLAT_TABLE,
-    mode="overwrite",
-    properties=JDBC_PROPERTIES,
-)
+# movimento_flat.write.jdbc(
+#     url=JDBC_URL,
+#     table=MOVIMENTO_FLAT_TABLE,
+#     mode="overwrite",
+#     properties=JDBC_PROPERTIES,
+# )
 
 # Prepara o caminho local de saida para exportacao CSV.
 output_dir = Path(OUTPUT_PATH)
