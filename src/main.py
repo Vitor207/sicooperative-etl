@@ -139,7 +139,7 @@ validar_qualidade_df(
 )
 validar_qualidade_df(df_movimento, "movimento", pk_col="id", colunas_valor=["vlr_transacao"])
 
-# Transforma para o modelo flat.
+# Transforma para o modelo flat a tabela final.
 movimento_flat = (
     df_movimento.alias("m")
     .join(df_cartao.alias("c"), F.col("m.id_cartao") == F.col("c.id"), "inner")
@@ -159,6 +159,8 @@ movimento_flat = (
         F.col("co.data_criacao_conta").alias("Data_criacao_conta"),
     )
 )
+
+
 
 # Carrega no PostgreSQL na tabela final.
 movimento_flat.write.jdbc(
