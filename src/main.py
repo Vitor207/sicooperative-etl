@@ -213,25 +213,21 @@ movimento_flat = (
     .join(df_conta.alias("co"), F.col("c.id_conta") == F.col("co.id"), "left")
     .join(df_associado.alias("a"), F.col("co.id_associado") == F.col("a.id"), "left")
     .select(
-        F.initcap(F.trim(F.col("a.nome"))).cast("string").alias("Nome_associado"),
-        F.initcap(F.trim(F.col("a.sobrenome"))).cast("string").alias("Sobrenome_associado"),
-        F.col("a.idade").cast("int").alias("Idade_associado"),
-        F.col("m.vlr_transacao").cast("decimal(18,2)").alias("Vlr_transacao_movimento"),
-        F.initcap(F.trim(F.col("m.des_transacao"))).cast("string").alias("Des_transacao_movimento"),
-        F.date_format(F.col("m.data_movimento"), "dd/MM/yyyy").alias("Data_movimento"),
+        F.initcap(F.trim(F.col("a.nome"))).cast("string").alias("nome_associado"),
+        F.initcap(F.trim(F.col("a.sobrenome"))).cast("string").alias("sobrenome_associado"),
+        F.col("a.idade").cast("int").alias("idade_associado"),
+        F.col("m.vlr_transacao").cast("decimal(18,2)").alias("vlr_transacao_movimento"),
+        F.initcap(F.trim(F.col("m.des_transacao"))).cast("string").alias("des_transacao_movimento"),
+        F.date_format(F.col("m.data_movimento"), "dd/MM/yyyy").alias("data_movimento"),
         F.concat(
             F.substring(F.col("c.num_cartao").cast("string"), 1, 4),
             F.lit("********"),
             F.expr("right(cast(c.num_cartao as string), 4)"),
-        ).cast("string").alias("Numero_cartao"),
-        F.initcap(F.trim(F.col("c.nom_impresso"))).cast("string").alias("Nome_impresso_cartao"),
-        F.date_format(F.col("c.data_criacao_cartao"), "dd/MM/yyyy").alias("Data_criacao_cartao"),
-        F.initcap(F.trim(F.col("co.tipo"))).cast("string").alias("Tipo_conta"),
-        F.date_format(F.col("co.data_criacao_conta"), "dd/MM/yyyy").alias("Data_criacao_conta"),
-        F.when(
-            F.col("c.id").isNull() | F.col("co.id").isNull() | F.col("a.id").isNull(),
-            F.lit(1),
-        ).otherwise(F.lit(0)).cast("int").alias("flag_orfao_referencia"),
+        ).cast("string").alias("numero_cartao"),
+        F.initcap(F.trim(F.col("c.nom_impresso"))).cast("string").alias("nome_impresso_cartao"),
+        F.date_format(F.col("c.data_criacao_cartao"), "dd/MM/yyyy").alias("data_criacao_cartao"),
+        F.initcap(F.trim(F.col("co.tipo"))).cast("string").alias("tipo_conta"),
+        F.date_format(F.col("co.data_criacao_conta"), "dd/MM/yyyy").alias("data_criacao_conta"),
     )
 )
 
