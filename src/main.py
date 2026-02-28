@@ -50,87 +50,119 @@ def validar_qualidade_df(
 ):
     """Valida regras basicas de qualidade de dados por tabela."""
     erros = []
-
-    # Valida base nao vazia para evitar saida em branco.
-    qtd_registros = df.count()
-    if qtd_registros == 0:
-        erros.append("Base vazia (0 registros)")
-
-    # Valida PK duplicada.
-    qtd_pk_duplicada = df.groupBy(pk_col).count().filter(F.col("count") > 1).count()
-    if qtd_pk_duplicada > 0:
-        erros.append(f"PK duplicada: {qtd_pk_duplicada} chave(s)")
-
-    # Valida nulos somente nas colunas obrigatorias.
     colunas_obrigatorias = colunas_obrigatorias or []
-    if colunas_obrigatorias:
-        agregacoes_nulos = [
-            F.sum(F.when(F.col(c).isNull(), 1).otherwise(0)).alias(c)
-            for c in colunas_obrigatorias
+    colunas_numericas_obrigatorias = colunas_numericas_obrigatorias or []
+    colunas_valor = colunas_valor or []
+    colunas_tamanho_minimo = colunas_tamanho_minimo or {}
+    emails_bloqueados = set(e.lower() for e in (emails_bloqueados or []))
+
+    df_val = df.cache()
+    try:
+        # Consolidacao de contagens para reduzir numero de actions no Spark.
+        agg_exprs = [
+            F.count(F.lit(1)).alias("_row_count"),
+            F.countDistinct(F.col(pk_col)).alias("_pk_distinct"),
         ]
-        nulos = df.agg(*agregacoes_nulos).collect()[0].asDict()
-        nulos_detectados = {col: qtd for col, qtd in nulos.items() if qtd > 0}
+
+        for col in colunas_obrigatorias:
+            agg_exprs.append(
+                F.sum(F.when(F.col(col).isNull(), 1).otherwise(0)).alias(f"_null_{col}")
+            )
+
+        for col in colunas_numericas_obrigatorias:
+            agg_exprs.append(
+                F.sum(
+                    F.when(
+                        F.col(col).isNull()
+                        | F.col(col).cast("long").isNull()
+                        | (F.col(col).cast("long") <= 0),
+                        1,
+                    ).otherwise(0)
+                ).alias(f"_num_invalid_{col}")
+            )
+
+        for col in colunas_valor:
+            agg_exprs.append(
+                F.sum(F.when(F.col(col) == 0, 1).otherwise(0)).alias(f"_zero_{col}")
+            )
+
+        for col, tamanho_minimo in colunas_tamanho_minimo.items():
+            agg_exprs.append(
+                F.sum(
+                    F.when(F.length(F.col(col).cast("string")) < tamanho_minimo, 1).otherwise(0)
+                ).alias(f"_minlen_{col}")
+            )
+
+        if coluna_idade:
+            agg_exprs.append(
+                F.sum(
+                    F.when((F.col(coluna_idade) < 0) | (F.col(coluna_idade) > 120), 1).otherwise(0)
+                ).alias("_idade_invalida")
+            )
+
+        if coluna_email:
+            regex_email = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+            email_norm = F.lower(F.trim(F.col(coluna_email)))
+            agg_exprs.append(
+                F.sum(
+                    F.when((~email_norm.rlike(regex_email)) | email_norm.isin(list(emails_bloqueados)), 1).otherwise(0)
+                ).alias("_email_invalido")
+            )
+
+        metricas = df_val.agg(*agg_exprs).collect()[0].asDict()
+
+        # Base nao vazia.
+        qtd_registros = metricas["_row_count"]
+        if qtd_registros == 0:
+            erros.append("Base vazia (0 registros)")
+
+        # PK duplicada: calcula detalhamento apenas se necessario.
+        if qtd_registros > metricas["_pk_distinct"]:
+            qtd_pk_duplicada = df_val.groupBy(pk_col).count().filter(F.col("count") > 1).count()
+            erros.append(f"PK duplicada: {qtd_pk_duplicada} chave(s)")
+
+        nulos_detectados = {
+            col: metricas[f"_null_{col}"] for col in colunas_obrigatorias if metricas[f"_null_{col}"] > 0
+        }
         if nulos_detectados:
             erros.append(f"Nulos em colunas obrigatorias: {nulos_detectados}")
 
-    # Valida colunas numericas obrigatorias (ex.: IDs) como inteiros positivos.
-    colunas_numericas_obrigatorias = colunas_numericas_obrigatorias or []
-    numeros_invalidos = {}
-    for col in colunas_numericas_obrigatorias:
-        qtd_invalido = df.filter(
-            F.col(col).isNull() | (F.col(col).cast("long").isNull()) | (F.col(col).cast("long") <= 0)
-        ).count()
-        if qtd_invalido > 0:
-            numeros_invalidos[col] = qtd_invalido
-    if numeros_invalidos:
-        erros.append(f"Numeros invalidos em colunas obrigatorias: {numeros_invalidos}")
+        numeros_invalidos = {
+            col: metricas[f"_num_invalid_{col}"]
+            for col in colunas_numericas_obrigatorias
+            if metricas[f"_num_invalid_{col}"] > 0
+        }
+        if numeros_invalidos:
+            erros.append(f"Numeros invalidos em colunas obrigatorias: {numeros_invalidos}")
 
-    # Valida valores zerados para colunas de valor.
-    colunas_valor = colunas_valor or []
-    zeros_detectados = {}
-    for col in colunas_valor:
-        qtd_zero = df.filter(F.col(col) == 0).count()
-        if qtd_zero > 0:
-            zeros_detectados[col] = qtd_zero
-    if zeros_detectados:
-        erros.append(f"Valores zerados: {zeros_detectados}")
+        zeros_detectados = {
+            col: metricas[f"_zero_{col}"] for col in colunas_valor if metricas[f"_zero_{col}"] > 0
+        }
+        if zeros_detectados:
+            erros.append(f"Valores zerados: {zeros_detectados}")
 
-    # Valida faixa de idade entre 0 e 120.
-    if coluna_idade:
-        qtd_idade_invalida = df.filter(
-            (F.col(coluna_idade) < 0) | (F.col(coluna_idade) > 120)
-        ).count()
-        if qtd_idade_invalida > 0:
-            erros.append(f"Idade fora da faixa 0-120: {qtd_idade_invalida} registro(s)")
+        tamanho_invalido = {
+            col: metricas[f"_minlen_{col}"]
+            for col in colunas_tamanho_minimo
+            if metricas[f"_minlen_{col}"] > 0
+        }
+        if tamanho_invalido:
+            erros.append(f"Tamanho minimo invalido: {tamanho_invalido}")
 
-    # Valida email no formato basico e bloqueia emails placeholder conhecidos.
-    if coluna_email:
-        emails_bloqueados = set(e.lower() for e in (emails_bloqueados or []))
-        regex_email = r"^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
-        df_email = df.withColumn("_email_norm", F.lower(F.trim(F.col(coluna_email))))
-        qtd_email_invalido = df_email.filter(
-            (~F.col("_email_norm").rlike(regex_email))
-            | (F.col("_email_norm").isin(list(emails_bloqueados)))
-        ).count()
-        if qtd_email_invalido > 0:
-            erros.append(f"Email invalido/bloqueado: {qtd_email_invalido} registro(s)")
+        if coluna_idade and metricas.get("_idade_invalida", 0) > 0:
+            erros.append(f"Idade fora da faixa 0-120: {metricas['_idade_invalida']} registro(s)")
 
-    # Valida tamanho minimo de texto por coluna (ex.: num_cartao >= 16).
-    colunas_tamanho_minimo = colunas_tamanho_minimo or {}
-    tamanho_invalido = {}
-    for col, tamanho_minimo in colunas_tamanho_minimo.items():
-        qtd_tamanho_invalido = df.filter(F.length(F.col(col).cast("string")) < tamanho_minimo).count()
-        if qtd_tamanho_invalido > 0:
-            tamanho_invalido[col] = qtd_tamanho_invalido
-    if tamanho_invalido:
-        erros.append(f"Tamanho minimo invalido: {tamanho_invalido}")
+        if coluna_email and metricas.get("_email_invalido", 0) > 0:
+            erros.append(f"Email invalido/bloqueado: {metricas['_email_invalido']} registro(s)")
 
-    if erros:
-        raise ValueError(
-            f"Falha na qualidade de dados da tabela {nome_tabela}: " + " | ".join(erros)
-        )
+        if erros:
+            raise ValueError(
+                f"Falha na qualidade de dados da tabela {nome_tabela}: " + " | ".join(erros)
+            )
 
-    print(f"[OK] Qualidade validada para {nome_tabela}")
+        print(f"[OK] Qualidade validada para {nome_tabela}")
+    finally:
+        df_val.unpersist()
 
 
 # Extrai as tabelas de origem do PostgreSQL.
