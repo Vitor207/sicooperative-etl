@@ -209,9 +209,9 @@ validar_qualidade_df(
 # Transforma para o modelo flat a tabela final.
 movimento_flat = (
     df_movimento.alias("m")
-    .join(df_cartao.alias("c"), F.col("m.id_cartao") == F.col("c.id"), "inner")
-    .join(df_conta.alias("co"), F.col("c.id_conta") == F.col("co.id"), "inner")
-    .join(df_associado.alias("a"), F.col("co.id_associado") == F.col("a.id"), "inner")
+    .join(df_cartao.alias("c"), F.col("m.id_cartao") == F.col("c.id"), "left")
+    .join(df_conta.alias("co"), F.col("c.id_conta") == F.col("co.id"), "left")
+    .join(df_associado.alias("a"), F.col("co.id_associado") == F.col("a.id"), "left")
     .select(
         F.initcap(F.trim(F.col("a.nome"))).cast("string").alias("Nome_associado"),
         F.initcap(F.trim(F.col("a.sobrenome"))).cast("string").alias("Sobrenome_associado"),
@@ -228,6 +228,10 @@ movimento_flat = (
         F.date_format(F.col("c.data_criacao_cartao"), "dd/MM/yyyy").alias("Data_criacao_cartao"),
         F.initcap(F.trim(F.col("co.tipo"))).cast("string").alias("Tipo_conta"),
         F.date_format(F.col("co.data_criacao_conta"), "dd/MM/yyyy").alias("Data_criacao_conta"),
+        F.when(
+            F.col("c.id").isNull() | F.col("co.id").isNull() | F.col("a.id").isNull(),
+            F.lit(1),
+        ).otherwise(F.lit(0)).cast("int").alias("flag_orfao_referencia"),
     )
 )
 
