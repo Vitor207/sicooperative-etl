@@ -77,6 +77,13 @@ Os arquivos que não devem ser versionados (como `.env`) foram adicionados ao **
 
 Também foi incluído o arquivo **`requirements.txt`**, contendo todas as dependências utilizadas no projeto, permitindo a fácil reprodução do ambiente e garantindo padronização das bibliotecas necessárias para execução.
 
+**Resultado final do CSV para a POC salvo em diretório local**
+
+<p align="center">
+  <img width="700" alt="Resultado CSV POC" src="https://github.com/user-attachments/assets/494f9ace-e738-4b3a-8eb7-2b269c2d63d3" />
+</p>
+
+
 ---
 
 #  Versão Bônus — Pipeline Automatizada com Databricks
@@ -190,4 +197,5 @@ Caso houvesse mais tempo para evolução da POC, poderiam ser implementadas melh
 - Expansão das regras de Data Quality conforme a necessidade do negócio.
 
 Cada projeto possui um nível diferente de criticidade e exigência de qualidade de dados, sendo fundamental adaptar as validações conforme o contexto e o impacto no ambiente de produção.
+
 
