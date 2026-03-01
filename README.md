@@ -77,10 +77,15 @@ Os arquivos que não devem ser versionados (como `.env`) foram adicionados ao **
 
 Também foi incluído o arquivo **`requirements.txt`**, contendo todas as dependências utilizadas no projeto, permitindo a fácil reprodução do ambiente e garantindo padronização das bibliotecas necessárias para execução.
 
+**Print do terminal com os testes unitarios rodando no script e tabela final no vs code**
+<p align="center">
+<img width="800" height="700" alt="sss322" src="https://github.com/user-attachments/assets/83d6be2c-e2f8-4cac-b69b-d23b30ab36ed" />
+</p>
+
 **Resultado final do CSV para a POC salvo em diretório local**
 
 <p align="center">
-  <img width="700" alt="Resultado CSV POC" src="https://github.com/user-attachments/assets/494f9ace-e738-4b3a-8eb7-2b269c2d63d3" />
+  <img width="800" alt="Resultado CSV POC" src="https://github.com/user-attachments/assets/494f9ace-e738-4b3a-8eb7-2b269c2d63d3" />
 </p>
 
 
@@ -195,7 +200,9 @@ Caso houvesse mais tempo para evolução da POC, poderiam ser implementadas melh
 - Criação de um novo critério de teste unitário na camada **Gold**, validando se todos os *joins* entre as tabelas foram concluídos corretamente;
 - Implementação de testes unitários também na camada **Bronze**, dependendo da criticidade e da qualidade da origem dos dados;
 - Expansão das regras de Data Quality conforme a necessidade do negócio.
+- Implementação no fluxo local do prefect para deixar rodando de forma automatizada os scripts.
 
 Cada projeto possui um nível diferente de criticidade e exigência de qualidade de dados, sendo fundamental adaptar as validações conforme o contexto e o impacto no ambiente de produção.
+
 
 
