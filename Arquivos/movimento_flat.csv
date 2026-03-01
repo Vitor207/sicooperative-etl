@@ -1,0 +1,21 @@
+nome_associado,sobrenome_associado,idade_associado,vlr_transacao_movimento,des_transacao_movimento,data_movimento,numero_cartao,nome_impresso_cartao,data_criacao_cartao,tipo_conta,data_criacao_conta
+Vitor,Meller,25,150.50,Compra Supermercado,23/07/2023,1234********3451,Vitor Meller,07/08/2022,Corrente,05/11/2023
+Vitor,Meller,25,75.20,Lanche,18/04/2024,1234********3451,Vitor Meller,07/08/2022,Corrente,05/11/2023
+Elisa,Pereira,29,950.00,Curso,31/10/2025,1234********3456,Elisa Pereira,21/06/2024,Poupanca,04/06/2023
+Elisa,Pereira,29,40.00,Mercado,25/08/2024,1234********3456,Elisa Pereira,21/06/2024,Poupanca,04/06/2023
+Carlos,Souza,35,320.75,Compra Eletrônico,25/04/2025,1234********3453,Carlos Souza,25/08/2025,Corrente,10/12/2024
+Carlos,Souza,35,60.00,Café,16/02/2025,1234********3453,Carlos Souza,25/08/2025,Corrente,10/12/2024
+Daniel,Oliveira,31,120.00,Restaurante,13/10/2025,1234********3455,Daniel Oliveira,30/05/2022,Corrente,25/06/2022
+Daniel,Oliveira,31,80.00,Cinema,22/04/2024,1234********3455,Daniel Oliveira,30/05/2022,Corrente,25/06/2022
+Henrique,Martins,28,50.00,Farmácia,24/09/2022,1234********3459,Henrique Martins,25/01/2024,Corrente,20/10/2024
+Henrique,Martins,28,25.00,Café,23/04/2024,1234********3459,Henrique Martins,25/01/2024,Corrente,20/10/2024
+Beatriz,Costa,33,500.00,Aluguel,01/09/2025,1234********3454,Beatriz Costa,17/02/2022,Poupanca,26/01/2022
+Beatriz,Costa,33,25.50,Farmácia,10/02/2023,1234********3454,Beatriz Costa,17/02/2022,Poupanca,26/01/2022
+Gabriela,Ribeiro,34,1100.00,Salário,27/11/2022,1234********3458,Gabriela Ribeiro,09/04/2022,Poupanca,14/10/2023
+Gabriela,Ribeiro,34,90.00,Transporte,03/09/2024,1234********3458,Gabriela Ribeiro,09/04/2022,Poupanca,14/10/2023
+Fernando,Almeida,32,300.00,Academia,30/05/2025,1234********3457,Fernando Almeida,15/05/2023,Corrente,24/03/2023
+Fernando,Almeida,32,150.00,Supermercado,08/03/2025,1234********3457,Fernando Almeida,15/05/2023,Corrente,24/03/2023
+Isabela,Lima,27,200.00,Restaurante,06/11/2022,1234********3460,Isabela Lima,26/09/2025,Poupanca,10/01/2022
+Isabela,Lima,27,60.00,Cinema,19/01/2023,1234********3460,Isabela Lima,26/09/2025,Poupanca,10/01/2022
+Ana,Silva,30,2000.00,Salário,24/10/2023,1234********3452,Ana Silva,14/11/2022,Poupanca,30/09/2025
+Ana,Silva,30,50.00,Transporte,29/07/2022,1234********3452,Ana Silva,14/11/2022,Poupanca,30/09/2025
