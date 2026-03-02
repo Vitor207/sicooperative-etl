@@ -174,7 +174,7 @@ Os Jobs estão configurados para execução automática de segunda a sexta-feira
 
 ## 📊 Resultado Final
 
-Resultado final disponível no catálogo, na camada **Gold**, da tabela `movimento_flat`, desenvolvido nesta primeira POC:
+Resultado final disponível no catálogo, na camada **Gold**, da tabela `movimento_flat`, desenvolvido nesta primeira POC, onde os analistas e cientistas de dados podem consumir:
 
 <p align="center">
   <img width="1000" alt="Resultado Final Gold" src="https://github.com/user-attachments/assets/f73d7b8a-f6ff-41a6-8973-3f9df60aac63" />
@@ -204,6 +204,7 @@ Caso houvesse mais tempo para evolução da POC, poderiam ser implementadas melh
 - Implementação do fluxo local com a ferramenta prefect para deixar rodando de forma automatizada os scripts.
 
 Cada projeto possui um nível diferente de criticidade e exigência de qualidade de dados, sendo fundamental adaptar as validações conforme o contexto e o impacto no ambiente de produção.
+
 
 
 
