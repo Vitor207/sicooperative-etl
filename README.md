@@ -184,7 +184,8 @@ Resultado final disponível no catálogo, na camada **Gold**, da tabela `movimen
 
 ## 🧩 Considerações Finais
 
-Durante o desenvolvimento do projeto, a principal dificuldade encontrada foi a configuração do ambiente.
+Durante o desenvolvimento do projeto, a principal dificuldade encontrada foi a configuração do ambiente, pois ele estava dando conflito em algumas variáveis onde tive que testar todas
+etapas e validações das dependências até achar o "gargalo".
 
 Como o ambiente local não possuía previamente as dependências instaladas, foi necessário realizar:
 
@@ -203,6 +204,7 @@ Caso houvesse mais tempo para evolução da POC, poderiam ser implementadas melh
 - Implementação do fluxo local com a ferramenta prefect para deixar rodando de forma automatizada os scripts.
 
 Cada projeto possui um nível diferente de criticidade e exigência de qualidade de dados, sendo fundamental adaptar as validações conforme o contexto e o impacto no ambiente de produção.
+
 
 
 
