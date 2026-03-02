@@ -200,9 +200,10 @@ Caso houvesse mais tempo para evolução da POC, poderiam ser implementadas melh
 - Criação de um novo critério de teste unitário na camada **Gold**, validando se todos os *joins* entre as tabelas foram concluídos corretamente;
 - Implementação de testes unitários também na camada **Bronze**, dependendo da criticidade e da qualidade da origem dos dados;
 - Expansão das regras de Data Quality conforme a necessidade do negócio.
-- Implementação no fluxo local do prefect para deixar rodando de forma automatizada os scripts.
+- Implementação do fluxo local com a ferramenta prefect para deixar rodando de forma automatizada os scripts.
 
 Cada projeto possui um nível diferente de criticidade e exigência de qualidade de dados, sendo fundamental adaptar as validações conforme o contexto e o impacto no ambiente de produção.
+
 
 
 
